@@ -1,0 +1,22 @@
+{
+  "title":"Task Tracker - Giám sát tổng thể",
+  "uid":"tasktracker-de24",
+  "schemaVersion":41,
+  "version":1,
+  "refresh":"10s",
+  "timezone":"browser",
+  "time":{"from":"now-1h","to":"now"},
+  "tags":["tasktracker","de24","docker"],
+  "panels":[
+    {"id":1,"type":"stat","title":"App UP","gridPos":{"x":0,"y":0,"w":6,"h":5},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"up{job=\"tasktracker-app\"}","refId":"A"}],"fieldConfig":{"defaults":{"mappings":[{"type":"value","options":{"1":{"text":"HOẠT ĐỘNG","color":"green"},"0":{"text":"MẤT KẾT NỐI","color":"red"}}}]}}},
+    {"id":2,"type":"stat","title":"PostgreSQL UP","gridPos":{"x":6,"y":0,"w":6,"h":5},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"pg_up", "refId":"A"}]},
+    {"id":3,"type":"stat","title":"Nginx UP","gridPos":{"x":12,"y":0,"w":6,"h":5},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"nginx_up","refId":"A"}]},
+    {"id":4,"type":"stat","title":"Số kết nối PostgreSQL","gridPos":{"x":18,"y":0,"w":6,"h":5},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"sum(pg_stat_activity_count)","refId":"A"}]},
+    {"id":5,"type":"timeseries","title":"Request HTTP / phút","gridPos":{"x":0,"y":5,"w":12,"h":9},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"sum by (status) (rate(tasktracker_http_requests_total[5m])) * 60","legendFormat":"HTTP {{status}}","refId":"A"}]},
+    {"id":6,"type":"timeseries","title":"Độ trễ HTTP p95 (giây)","gridPos":{"x":12,"y":5,"w":12,"h":9},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"histogram_quantile(0.95, sum by (le) (rate(tasktracker_http_duration_seconds_bucket[5m])))","refId":"A"}]},
+    {"id":7,"type":"timeseries","title":"CPU container (core)","gridPos":{"x":0,"y":14,"w":12,"h":9},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"sum by (name) (rate(container_cpu_usage_seconds_total{image!=\"\"}[5m]))","legendFormat":"{{name}}","refId":"A"}]},
+    {"id":8,"type":"timeseries","title":"RAM container (MiB)","gridPos":{"x":12,"y":14,"w":12,"h":9},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"sum by (name) (container_memory_working_set_bytes{image!=\"\"}) / 1024 / 1024","legendFormat":"{{name}}","refId":"A"}]},
+    {"id":9,"type":"timeseries","title":"Nginx requests / s","gridPos":{"x":0,"y":23,"w":12,"h":9},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"rate(nginx_http_requests_total[5m])","refId":"A"}]},
+    {"id":10,"type":"timeseries","title":"Postgres transactions / s","gridPos":{"x":12,"y":23,"w":12,"h":9},"datasource":{"type":"prometheus","uid":"PROMETHEUS"},"targets":[{"expr":"sum(rate(pg_stat_database_xact_commit{datname=\"tasktracker\"}[5m]))","refId":"A"}]}
+  ]
+}

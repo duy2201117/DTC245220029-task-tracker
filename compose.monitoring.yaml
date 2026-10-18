@@ -1,0 +1,67 @@
+services:
+  prometheus:
+    image: prom/prometheus:v3.5.0
+    restart: unless-stopped
+    command: ["--config.file=/etc/prometheus/prometheus.yml", "--storage.tsdb.path=/prometheus", "--storage.tsdb.retention.time=7d"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports: ["127.0.0.1:9090:9090"]
+    networks: [observability, edge]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  grafana:
+    image: grafana/grafana:12.1.1
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:?Set GRAFANA_PASSWORD}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+    ports: ["127.0.0.1:${GRAFANA_PORT:-3001}:3000"]
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks: [observability, edge]
+    depends_on: [prometheus]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  nginx-exporter:
+    image: nginx/nginx-prometheus-exporter:1.4.2
+    command: ["--nginx.scrape-uri=http://nginx:8081/stub_status"]
+    restart: unless-stopped
+    networks: [observability]
+    depends_on: [nginx]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  postgres-exporter:
+    image: prometheuscommunity/postgres-exporter:v0.17.1
+    restart: unless-stopped
+    environment:
+      DATA_SOURCE_NAME: "postgresql://taskmonitor:${EXPORTER_DB_PASSWORD:?Set EXPORTER_DB_PASSWORD}@db:5432/tasktracker?sslmode=disable"
+    networks: [observability, backend]
+    depends_on: [db]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+
+  cadvisor:
+    image: ghcr.io/google/cadvisor:v0.60.5
+    restart: unless-stopped
+    command: ["-housekeeping_interval=30s", "-docker_only=true", "-disable_metrics=disk"]
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+    networks: [observability]
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    # Một số Docker rootless/Desktop không hỗ trợ đầy đủ host mounts này.
+
+volumes:
+  prometheus_data: {}
+  grafana_data: {}
