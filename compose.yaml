@@ -1,0 +1,95 @@
+name: tasktracker-de24
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tasktracker
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Run scripts/init-env.sh first}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Run scripts/init-env.sh first}
+      EXPORTER_DB_PASSWORD: ${EXPORTER_DB_PASSWORD:?Run scripts/init-env.sh first}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    networks: [backend]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d tasktracker"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    logging: &json_log
+      driver: json-file
+      options: {max-size: "10m", max-file: "3"}
+
+  app:
+    build: ./app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: tasktracker
+      DB_USER: taskapp
+      DB_PASSWORD: ${APP_DB_PASSWORD:?Set APP_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET}
+      COOKIE_SECURE: "false"
+    depends_on:
+      db: {condition: service_healthy}
+    networks: [backend, observability]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 8s
+      retries: 6
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 150
+    logging: *json_log
+
+  nginx:
+    image: nginx:1.27-alpine
+    user: "101:101"
+    restart: unless-stopped
+    command: ["nginx", "-g", "daemon off;", "-c", "/etc/nginx/nginx.conf"]
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      app: {condition: service_healthy}
+    networks: [edge, backend, observability]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    logging: *json_log
+
+  pgadmin:
+    image: dpage/pgadmin4:9.9
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:?Set PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:?Set PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: "True"
+    ports:
+      - "127.0.0.1:${PGADMIN_PORT:-5050}:80"
+    volumes: [pgadmin_data:/var/lib/pgadmin]
+    depends_on: [db]
+    networks: [edge, backend]
+    security_opt: [no-new-privileges:true]
+    logging: *json_log
+
+networks:
+  edge: {}
+  backend: {internal: true}
+  observability: {internal: true}
+volumes:
+  pgdata: {}
+  pgadmin_data: {}

@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+.vscode/
+*.sqlite
+screenshots/*.png
+screenshots/*.jpg
+screenshots/*.webp

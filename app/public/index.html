@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#111d35" />
+  <meta name="description" content="TaskFlow - không gian quản lý công việc cá nhân và nhóm" />
+  <title>TaskFlow • Không gian làm việc thông minh</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <section id="authScreen" class="auth-layout hidden">
+    <div class="auth-art">
+      <div class="auth-brand"><span class="brand-mark">✦</span> TaskFlow<span class="brand-dot">.</span></div>
+      <div class="auth-content"><span class="eyebrow">QUẢN LÝ CÔNG VIỆC THÔNG MINH</span><h1>Tập trung vào<br/><em>điều quan trọng.</em></h1><p>Lên kế hoạch tốt hơn, hợp tác mượt mà hơn và chinh phục từng cột mốc của bạn.</p><div class="auth-tags"><span>◉ Theo dõi tiến độ</span><span>◎ Làm việc nhóm</span><span>↗ Hiệu suất rõ ràng</span></div></div>
+      <div class="auth-footer">Một không gian. Mọi kế hoạch. Mọi thành công.</div>
+    </div>
+    <main class="auth-panel"><div class="auth-card"><span class="auth-kicker">CHÀO MỪNG ĐẾN TASKFLOW</span><h2 id="authTitle">Rất vui được gặp lại!</h2><p id="authSubtitle">Đăng nhập để tiếp tục hành trình làm việc hiệu quả.</p>
+      <form id="authForm"><label id="nameWrapper" class="hidden">Họ và tên<input autocomplete="name" name="name" placeholder="Ví dụ: Nguyễn Văn A" /></label><label>Email<input required autocomplete="email" type="email" name="email" placeholder="email@example.com" /></label><label>Mật khẩu<input required autocomplete="current-password" type="password" name="password" placeholder="Tối thiểu 10 ký tự, có chữ và số" /></label><button id="authSubmit" class="primary-btn full" type="submit">Đăng nhập <span>→</span></button></form>
+      <p class="switch-auth"><span id="switchIntro">Chưa có tài khoản?</span> <button id="switchAuth" type="button">Đăng ký ngay</button></p>
+      <p class="auth-hint">🔒 Phiên đăng nhập được lưu bằng cookie bảo vệ HttpOnly.</p></div></main>
+  </section>
+  <div id="dashboard" class="app-layout hidden">
+    <aside class="sidebar">
+      <div class="logo"><span class="brand-mark">✦</span> TaskFlow<span class="brand-dot">.</span></div>
+      <div class="sidebar-heading">KHÔNG GIAN LÀM VIỆC</div>
+      <nav class="main-nav" aria-label="Điều hướng"><button data-view="overview" class="active"><span class="nav-icon">▦</span> Tổng quan</button><button data-view="board"><span class="nav-icon">◫</span> Bảng công việc</button><button data-view="list"><span class="nav-icon">☷</span> Danh sách công việc</button><button data-view="team"><span class="nav-icon">♧</span> Thành viên nhóm</button></nav>
+      <div class="sidebar-heading project-label">DỰ ÁN CỦA BẠN <button id="newProjectBtn" aria-label="Tạo dự án">＋</button></div>
+      <div id="projectNav" class="project-nav"></div>
+      <div class="sidebar-bottom"><div class="tip"><div>✧ TẬP TRUNG MỖI NGÀY</div><strong>Mỗi việc nhỏ<br/>đều tạo khác biệt.</strong><span>Cố gắng hơn 1% mỗi ngày!</span></div><button id="logoutBtn" class="logout">⇥ <span>Đăng xuất</span></button></div>
+    </aside>
+    <main class="workspace">
+      <header class="topbar"><div class="breadcrumbs">Workspace <span>/</span> <strong id="breadcrumbPage">Tổng quan</strong></div><div class="top-actions"><span class="status-chip">● Hệ thống hoạt động</span><div id="avatar" class="avatar">U</div><div id="userName" class="top-name">Tài khoản</div></div></header>
+      <div class="page-body"><div class="page-heading"><div><div class="overline" id="viewKicker">DASHBOARD / OVERVIEW</div><h1 id="viewTitle">Xin chào! 👋</h1><p id="viewDescription">Tổng hợp mọi công việc và tiến độ của bạn.</p></div><button id="addTaskBtn" class="primary-btn">＋ Tạo công việc</button></div>
+        <div id="stats" class="stats-grid"></div><div id="content"></div>
+      </div>
+    </main>
+  </div>
+  <div id="modal" class="modal-overlay hidden" role="presentation"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-head"><div><span class="overline" id="modalKicker">QUẢN LÝ CÔNG VIỆC</span><h2 id="modalTitle">Tạo công việc</h2></div><button id="modalClose" class="close-btn" aria-label="Đóng">×</button></div><div id="modalContent"></div></div></div>
+  <script src="/app.js" defer></script>
+</body></html>
